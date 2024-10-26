@@ -88,6 +88,7 @@ void Renderer::init() {
 
     setupShaders();
     setupCube();
+    setupGround(); // Call this to initialize the ground
 
     // Initialize camera
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
@@ -194,12 +195,16 @@ void Renderer::drawCube() {
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+    // Draw the cube
     GLuint texture = loadTexture("texture.jpg");
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+    // Draw the ground
+    drawGround();
 }
 
 void Renderer::processInput(float deltaTime) {
@@ -233,6 +238,8 @@ void Renderer::swapBuffers() {
 void Renderer::cleanup() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &groundVAO);
+    glDeleteBuffers(1, &groundVBO);
     glDeleteProgram(shaderProgram);
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -264,4 +271,42 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
 Camera* Renderer::getCamera() const {
     return camera;
+}
+
+void Renderer::setupGround() {
+    float groundVertices[] = {
+        // positions          // texture coords
+        -5.0f, 0.0f, -5.0f,  0.0f, 0.0f,
+         5.0f, 0.0f, -5.0f,  1.0f, 0.0f,
+         5.0f, 0.0f,  5.0f,  1.0f, 1.0f,
+         5.0f, 0.0f,  5.0f,  1.0f, 1.0f,
+        -5.0f, 0.0f,  5.0f,  0.0f, 1.0f,
+        -5.0f, 0.0f, -5.0f,  0.0f, 0.0f,
+    };
+
+    glGenVertexArrays(1, &groundVAO);
+    glGenBuffers(1, &groundVBO);
+
+    glBindVertexArray(groundVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(groundVertices), groundVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void Renderer::drawGround() {
+    GLuint groundTexture = loadTexture("ground.png");
+    glBindTexture(GL_TEXTURE_2D, groundTexture);
+
+    glBindVertexArray(groundVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
 }

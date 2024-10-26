@@ -10,22 +10,25 @@ public:
     Renderer();
     ~Renderer();
     void init();
-    void clear();
     void drawCube();
+    void processInput(float deltaTime);
+    void clear();
     void swapBuffers();
     void cleanup();
     bool shouldClose() const;
-    void processInput(float deltaTime);
     Camera* getCamera() const;
 
 private:
     GLFWwindow* window;
     GLuint VAO, VBO;
+    GLuint groundVAO, groundVBO; // Ensure these are declared
     GLuint shaderProgram;
-    Camera* camera; // Добавляем указатель на Camera
+    Camera* camera;
 
     void setupShaders();
     void setupCube();
+    void setupGround(); // Ensure this is declared
+    void drawGround();  // Ensure this is declared
 };
 
 #endif // RENDERER_H
