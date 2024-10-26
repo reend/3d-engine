@@ -25,10 +25,9 @@ private:
     GLuint shaderProgram;
     Camera* camera;
 
-    GLuint cubeTexture;   // Declare cube texture
-    GLuint groundTexture; // Declare ground texture
+    GLuint cubeTexture;
+    GLuint groundTexture;
 
-    void setupShaders();
     void setupCube();
     void setupGround();
     void drawGround();
