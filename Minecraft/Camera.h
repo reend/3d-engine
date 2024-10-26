@@ -2,6 +2,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <glew.h>
+#include <glfw3.h>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 
@@ -11,6 +13,7 @@ public:
 
     glm::mat4 getViewMatrix() const;
     void processKeyboardInput(int direction, float deltaTime);
+    void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 
     enum CameraMovement {
         FORWARD,
@@ -29,6 +32,7 @@ private:
     float yaw;
     float pitch;
     float movementSpeed;
+    float mouseSensitivity;
 
     void updateCameraVectors();
 };

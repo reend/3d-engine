@@ -6,6 +6,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
 // Vertex Shader source code
 const char* vertexShaderSource = R"(
 #version 330 core
@@ -89,6 +91,11 @@ void Renderer::init() {
 
     // Initialize camera
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+
+    // Set mouse callback
+    glfwSetWindowUserPointer(window, this);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Renderer::setupShaders() {
@@ -235,4 +242,26 @@ bool Renderer::shouldClose() const {
     return glfwWindowShouldClose(window);
 }
 
+static float lastX = 400, lastY = 300;
+static bool firstMouse = true;
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    renderer->getCamera()->processMouseMovement(xoffset, yoffset);
+}
+
+Camera* Renderer::getCamera() const {
+    return camera;
+}

@@ -2,7 +2,7 @@
 #include "Camera.h"
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(2.5f), yaw(yaw), pitch(pitch) {
+    : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(2.5f), mouseSensitivity(0.1f), yaw(yaw), pitch(pitch) {
     this->position = position;
     this->worldUp = up;
     updateCameraVectors();
@@ -22,6 +22,23 @@ void Camera::processKeyboardInput(int direction, float deltaTime) {
         position -= right * velocity;
     if (direction == RIGHT)
         position += right * velocity;
+}
+
+void Camera::processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch) {
+    xoffset *= mouseSensitivity;
+    yoffset *= mouseSensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if (constrainPitch) {
+        if (pitch > 89.0f)
+            pitch = 89.0f;
+        if (pitch < -89.0f)
+            pitch = -89.0f;
+    }
+
+    updateCameraVectors();
 }
 
 void Camera::updateCameraVectors() {

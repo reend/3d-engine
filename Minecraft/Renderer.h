@@ -15,7 +15,8 @@ public:
     void swapBuffers();
     void cleanup();
     bool shouldClose() const;
-    void processInput(float deltaTime); // Добавляем метод processInput
+    void processInput(float deltaTime);
+    Camera* getCamera() const;
 
 private:
     GLFWwindow* window;
