@@ -5,6 +5,7 @@
 
 class Texture {
 public:
+    GLuint id;  // Add this line
     static GLuint loadTexture(const char* path);
 };
 

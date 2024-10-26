@@ -4,6 +4,7 @@
 #include <glew.h>
 #include <glfw3.h>
 #include "Camera.h"
+#include "Model.h"
 
 class Renderer {
 public:
@@ -27,6 +28,8 @@ private:
 
     GLuint cubeTexture;
     GLuint groundTexture;
+
+    Model* model; // Add this line
 
     void setupCube();
     void setupGround();

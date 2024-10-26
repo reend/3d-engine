@@ -4,6 +4,7 @@
 #include <iostream>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+#include "Model.h"
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
@@ -19,7 +20,7 @@ void Renderer::init() {
         return;
     }
 
-    window = glfwCreateWindow(800, 600, "OpenGL Cube", nullptr, nullptr);
+    window = glfwCreateWindow(800, 600, "3D", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -43,6 +44,8 @@ void Renderer::init() {
     groundTexture = Texture::loadTexture("ground.png");
 
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+
+    model = new Model("model.obj"); // Load your model
 
     glfwSetWindowUserPointer(window, this);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -119,10 +122,7 @@ void Renderer::drawCube() {
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-    glBindTexture(GL_TEXTURE_2D, cubeTexture);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
+    model->draw(shaderProgram); // Draw the model
 
     drawGround();
 }
@@ -166,6 +166,7 @@ void Renderer::cleanup() {
     glDeleteProgram(shaderProgram);
     glDeleteTextures(1, &cubeTexture);
     glDeleteTextures(1, &groundTexture);
+    delete model; // Clean up the model
     glfwDestroyWindow(window);
     glfwTerminate();
 }

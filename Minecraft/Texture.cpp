@@ -28,8 +28,7 @@ GLuint Texture::loadTexture(const char* path) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
-    }
-    else {
+    } else {
         std::cerr << "Failed to load texture" << std::endl;
         stbi_image_free(data);
     }
