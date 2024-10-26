@@ -6,6 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+GLuint loadTexture(const char* path);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 // Vertex Shader source code
@@ -88,7 +89,11 @@ void Renderer::init() {
 
     setupShaders();
     setupCube();
-    setupGround(); // Call this to initialize the ground
+    setupGround();
+
+    // Load textures once
+    cubeTexture = loadTexture("texture.jpg");
+    groundTexture = loadTexture("ground.png");
 
     // Initialize camera
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
@@ -196,9 +201,7 @@ void Renderer::drawCube() {
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
     // Draw the cube
-    GLuint texture = loadTexture("texture.jpg");
-    glBindTexture(GL_TEXTURE_2D, texture);
-
+    glBindTexture(GL_TEXTURE_2D, cubeTexture);
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
@@ -241,6 +244,8 @@ void Renderer::cleanup() {
     glDeleteVertexArrays(1, &groundVAO);
     glDeleteBuffers(1, &groundVBO);
     glDeleteProgram(shaderProgram);
+    glDeleteTextures(1, &cubeTexture);
+    glDeleteTextures(1, &groundTexture);
     glfwDestroyWindow(window);
     glfwTerminate();
 }
@@ -276,12 +281,12 @@ Camera* Renderer::getCamera() const {
 void Renderer::setupGround() {
     float groundVertices[] = {
         // positions          // texture coords
-        -5.0f, 0.0f, -5.0f,  0.0f, 0.0f,
-         5.0f, 0.0f, -5.0f,  1.0f, 0.0f,
-         5.0f, 0.0f,  5.0f,  1.0f, 1.0f,
-         5.0f, 0.0f,  5.0f,  1.0f, 1.0f,
-        -5.0f, 0.0f,  5.0f,  0.0f, 1.0f,
-        -5.0f, 0.0f, -5.0f,  0.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f,  0.0f, 0.0f,  // Adjust y-coordinate to -0.5f
+         5.0f, -0.5f, -5.0f,  1.0f, 0.0f,
+         5.0f, -0.5f,  5.0f,  1.0f, 1.0f,
+         5.0f, -0.5f,  5.0f,  1.0f, 1.0f,
+        -5.0f, -0.5f,  5.0f,  0.0f, 1.0f,
+        -5.0f, -0.5f, -5.0f,  0.0f, 0.0f,
     };
 
     glGenVertexArrays(1, &groundVAO);
@@ -303,9 +308,7 @@ void Renderer::setupGround() {
 }
 
 void Renderer::drawGround() {
-    GLuint groundTexture = loadTexture("ground.png");
     glBindTexture(GL_TEXTURE_2D, groundTexture);
-
     glBindVertexArray(groundVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);

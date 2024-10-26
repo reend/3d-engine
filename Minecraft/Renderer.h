@@ -21,14 +21,17 @@ public:
 private:
     GLFWwindow* window;
     GLuint VAO, VBO;
-    GLuint groundVAO, groundVBO; // Ensure these are declared
+    GLuint groundVAO, groundVBO;
     GLuint shaderProgram;
     Camera* camera;
 
+    GLuint cubeTexture;   // Declare cube texture
+    GLuint groundTexture; // Declare ground texture
+
     void setupShaders();
     void setupCube();
-    void setupGround(); // Ensure this is declared
-    void drawGround();  // Ensure this is declared
+    void setupGround();
+    void drawGround();
 };
 
 #endif // RENDERER_H
