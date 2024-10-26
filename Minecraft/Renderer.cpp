@@ -1,12 +1,20 @@
 #include "Renderer.h"
 #include <iostream>
+#include "Camera.h"
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+
 
 // Vertex Shader source code
 const char* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec3 aPos;
+
+uniform mat4 view;
+uniform mat4 projection;
+
 void main() {
-    gl_Position = vec4(aPos, 1.0);
+    gl_Position = projection * view * vec4(aPos, 1.0);
 }
 )";
 
@@ -19,10 +27,10 @@ void main() {
 }
 )";
 
-Renderer::Renderer() : window(nullptr), VAO(0), VBO(0), shaderProgram(0) {}
+Renderer::Renderer() : camera(nullptr) {}
 
 Renderer::~Renderer() {
-    cleanup();
+    delete camera; // Убедитесь, что память освобождается
 }
 
 void Renderer::init() {
@@ -45,6 +53,9 @@ void Renderer::init() {
         return;
     }
 
+    // Initialize camera
+    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+
     setupShaders();
     setupCube();
 }
@@ -55,6 +66,17 @@ void Renderer::clear() {
 
 void Renderer::drawCube() {
     glUseProgram(shaderProgram);
+
+    // Create view and projection matrices
+    glm::mat4 view = camera->getViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)800 / (float)600, 0.1f, 100.0f);
+
+    // Pass matrices to shader
+    GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+    GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
@@ -77,19 +99,41 @@ bool Renderer::shouldClose() const {
     return glfwWindowShouldClose(window);
 }
 
+void checkShaderCompileErrors(GLuint shader, std::string type) {
+    GLint success;
+    GLchar infoLog[1024];
+    if (type != "PROGRAM") {
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+            std::cerr << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+        }
+    }
+    else {
+        glGetProgramiv(shader, GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+            std::cerr << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+        }
+    }
+}
+
 void Renderer::setupShaders() {
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
+    checkShaderCompileErrors(vertexShader, "VERTEX");
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
     glCompileShader(fragmentShader);
+    checkShaderCompileErrors(fragmentShader, "FRAGMENT");
 
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
+    checkShaderCompileErrors(shaderProgram, "PROGRAM");
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -155,3 +199,16 @@ void Renderer::setupCube() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
+
+void Renderer::processInput(float deltaTime) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->processKeyboardInput(Camera::FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->processKeyboardInput(Camera::BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera->processKeyboardInput(Camera::LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera->processKeyboardInput(Camera::RIGHT, deltaTime);
+}
+
+

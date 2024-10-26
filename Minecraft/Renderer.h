@@ -3,6 +3,7 @@
 
 #include <glew.h>
 #include <glfw3.h>
+#include "Camera.h"
 
 class Renderer {
 public:
@@ -14,13 +15,16 @@ public:
     void swapBuffers();
     void cleanup();
     bool shouldClose() const;
+    void processInput(float deltaTime); // Добавляем метод processInput
 
 private:
     GLFWwindow* window;
     GLuint VAO, VBO;
     GLuint shaderProgram;
+    Camera* camera; // Добавляем указатель на Camera
+
     void setupShaders();
     void setupCube();
 };
 
-#endif // RENDERER_HH
+#endif // RENDERER_H
